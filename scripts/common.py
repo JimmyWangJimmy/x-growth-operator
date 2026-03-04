@@ -4,9 +4,6 @@ import json
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any
-
-
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 SCRIPTS_DIR = ROOT / "scripts"
@@ -61,57 +58,3 @@ def utc_now_iso() -> str:
 
 def normalize_text(value: str) -> str:
     return " ".join((value or "").strip().split())
-
-
-def mission_focus_terms(mission: dict[str, Any], limit: int = 8) -> list[str]:
-    phrases: list[str] = []
-    for field in ("primary_topics", "watch_keywords", "audience"):
-        value = mission.get(field, [])
-        if isinstance(value, list):
-            phrases.extend(normalize_text(str(item)) for item in value if normalize_text(str(item)))
-
-    seen: set[str] = set()
-    ordered: list[str] = []
-    for phrase in phrases:
-        lowered = phrase.lower()
-        if lowered in seen:
-            continue
-        seen.add(lowered)
-        ordered.append(phrase)
-        if len(ordered) >= limit:
-            break
-    return ordered
-
-
-def mission_search_query(mission: dict[str, Any], limit: int = 6) -> str:
-    phrases = mission_focus_terms(mission, limit=limit)
-    if not phrases:
-        fallback = normalize_text(mission.get("goal", ""))
-        if fallback:
-            phrases = [fallback]
-
-    query_parts: list[str] = []
-    for phrase in phrases[:limit]:
-        if " " in phrase:
-            query_parts.append(f'"{phrase}"')
-        else:
-            query_parts.append(phrase)
-    return " OR ".join(query_parts)
-
-
-def mission_markers(mission: dict[str, Any]) -> set[str]:
-    markers: set[str] = set()
-    handle = normalize_text(str(mission.get("account_handle", ""))).lower().lstrip("@")
-    if handle:
-        markers.add(handle)
-        markers.add(f"@{handle}")
-
-    for phrase in mission_focus_terms(mission, limit=12):
-        lowered = phrase.lower()
-        if len(lowered) >= 3:
-            markers.add(lowered)
-        for token in lowered.replace("/", " ").replace("-", " ").split():
-            token = token.strip()
-            if len(token) >= 4:
-                markers.add(token)
-    return markers

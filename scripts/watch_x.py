@@ -1,10 +1,16 @@
 from __future__ import annotations
 
 import argparse
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from common import load_json, utc_now_iso, write_json
+from core.scoring import score_opportunity
 from memory_store import load_memory
-from scoring import score_opportunity
 
 
 def main() -> int:

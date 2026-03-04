@@ -11,7 +11,10 @@ OUTPUT = DIST / "x-growth-operator-skill.zip"
 INCLUDE_PREFIXES = (
     "SKILL.md",
     "README.md",
+    "ROADMAP.md",
+    "LICENSE",
     "agents/openai.yaml",
+    "core/",
     "references/",
     "examples/",
     "scripts/",

@@ -34,6 +34,12 @@ Planned:
 - Dedicated storage layer for mission, memory, and execution history
 - Provider adapters for additional search and execution sources
 
+In progress:
+
+- `core/mission.py` for mission parsing and mission-derived helpers
+- `core/scoring.py` for opportunity scoring and action selection
+- `core/drafting.py` for action draft generation
+
 ## Stage 4: Product Surface
 
 Goal: move beyond a CLI-driven skill into an operator product.

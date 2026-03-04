@@ -2,8 +2,15 @@ from __future__ import annotations
 
 import argparse
 import subprocess
+import sys
+from pathlib import Path
 
-from common import load_json, mission_search_query
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from common import load_json
+from core.mission import mission_search_query
 
 
 def run_step(cmd: list[str]) -> None:
