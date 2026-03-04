@@ -4,7 +4,7 @@ import argparse
 import subprocess
 from pathlib import Path
 
-from common import load_local_env
+from common import load_json, load_local_env, mission_search_query
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -22,7 +22,7 @@ def main() -> int:
     parser.add_argument("--doc", help="Mission brief document path.")
     parser.add_argument("--prompt", help="Inline mission prompt.")
     parser.add_argument("--opportunities", help="Opportunities JSON path.")
-    parser.add_argument("--live-query", help="Optional Desearch live search query to generate opportunities instead of --opportunities.")
+    parser.add_argument("--live-query", help="Optional Desearch live search query to generate opportunities instead of --opportunities. If omitted, derive it from the mission.")
     parser.add_argument("--feedback", help="Optional feedback JSON path.")
     parser.add_argument("--mission", default="data/mission.json", help="Mission JSON output path.")
     parser.add_argument("--memory", default="data/memory.json", help="Memory JSON path.")
@@ -30,8 +30,8 @@ def main() -> int:
 
     if not args.doc and not args.prompt and not Path(args.mission).exists():
         parser.error("Provide --doc or --prompt, or ensure --mission already exists.")
-    if not args.live_query and not args.opportunities:
-        parser.error("Provide --opportunities or --live-query.")
+    if not args.opportunities and not Path(args.mission).exists() and not (args.doc or args.prompt):
+        parser.error("Provide --opportunities or a mission source that can generate a live query.")
 
     if args.doc or args.prompt:
         cmd = ["python3", "scripts/ingest_goal.py", "--mission", args.mission]
@@ -42,13 +42,17 @@ def main() -> int:
         run_step(cmd)
 
     opportunities_input = args.opportunities
-    if args.live_query:
+    if args.live_query or not args.opportunities:
         opportunities_input = "data/opportunities_from_desearch.json"
+        mission = load_json(args.mission)
+        query = args.live_query or mission_search_query(mission)
+        if not query:
+            raise SystemExit("Could not derive a live search query from the mission.")
         run_step([
             "python3",
             "scripts/import_desearch.py",
             "x",
-            args.live_query,
+            query,
             "--count",
             "10",
             "--output",

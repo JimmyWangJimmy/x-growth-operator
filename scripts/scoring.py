@@ -3,6 +3,8 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
+from common import mission_markers
+
 
 RISK_PENALTIES = {
     "low": 30,
@@ -149,7 +151,7 @@ def score_opportunity(mission: dict[str, Any], item: dict[str, Any], memory: dic
         reasons.append(f"sentiment is {sentiment}")
 
     risk_level = "high" if risk_hits or sentiment_penalty >= 10 else "medium" if total_score < 35 else "low"
-    recommended_action = choose_action(total_score, risk_level, item)
+    recommended_action = choose_action(mission, total_score, risk_level, item)
 
     return {
         **item,
@@ -164,9 +166,11 @@ def score_opportunity(mission: dict[str, Any], item: dict[str, Any], memory: dic
     }
 
 
-def choose_action(total_score: float, risk_level: str, item: dict[str, Any]) -> str:
+def choose_action(mission: dict[str, Any], total_score: float, risk_level: str, item: dict[str, Any]) -> str:
     text = (item.get("text") or "").lower()
     direct_conversation = "@" in text
+    relevant_markers = mission_markers(mission)
+    mission_signal = any(marker in text for marker in relevant_markers)
     question_signal = "?" in text or any(phrase in text for phrase in [
         "how ",
         "how do",
@@ -187,19 +191,14 @@ def choose_action(total_score: float, risk_level: str, item: dict[str, Any]) -> 
         "setup",
     ])
     restrictive_conversation = direct_conversation and not any(
-        phrase in text for phrase in [
-            "@openclaw",
-            "@agentopenclaw",
-            "openclaw ",
-            "claude code",
-            "local agent",
-            "coding agent",
-        ]
+        phrase in text for phrase in relevant_markers
     )
 
     if risk_level == "high":
         return "observe"
     if restrictive_conversation and total_score < 45:
+        return "observe"
+    if direct_conversation and not mission_signal and total_score < 42:
         return "observe"
     if direct_conversation and total_score < 38 and not question_signal and not experience_signal:
         return "observe"

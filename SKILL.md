@@ -1,15 +1,15 @@
 ---
 name: x-growth-operator
-description: Plan and execute X growth operations for OpenClaw. Use when the user wants to monitor KOL posts, detect emerging discussions, turn briefs or uploaded docs into a growth mission, draft replies/posts, rank opportunities, and execute approved actions with a local audit trail.
+description: Plan and execute mission-driven X growth operations. Use when the user wants to monitor KOL posts, detect emerging discussions, turn briefs or uploaded docs into a growth mission, draft replies or posts, rank opportunities, and execute approved actions with a local audit trail.
 ---
 
 # X Growth Operator
 
-Use this skill when the user wants an OpenClaw workflow for X operations rather than a generic writing assistant.
+Use this skill when the user wants a review-first workflow for X operations rather than a generic writing assistant.
 
 ## Purpose
 
-Turn a brief into an X growth mission, find relevant opportunities, draft actions, and execute approved posts with an audit trail.
+Turn a user brief into an X growth mission, infer what the account should watch, find relevant opportunities, draft actions, and execute approved posts with an audit trail.
 
 ## Trigger Conditions
 
@@ -49,7 +49,7 @@ Import live opportunities with Desearch:
 
 ```bash
 python3 scripts/import_desearch.py \
-  x "openclaw OR local agent" \
+  x "your query here" \
   --count 10 \
   --output data/opportunities_from_desearch.json
 ```
@@ -59,9 +59,10 @@ Or run live search all the way to an action plan:
 ```bash
 python3 scripts/live_search_and_plan.py \
   --mission data/mission.json \
-  --query "openclaw OR local agent OR coding agent" \
   --count 10
 ```
+
+If `--query` is omitted, derive the search query from mission topics, keywords, and audience.
 
 If the operator is manually surfing X and taking notes, convert those notes first:
 
@@ -77,7 +78,7 @@ python3 scripts/import_surf_notes.py \
 python3 scripts/propose_action.py \
   --mission data/mission.json \
   --opportunities data/opportunities_scored.json \
-  --opportunity-id opp-openclaw-breakout \
+  --opportunity-id YOUR_OPPORTUNITY_ID \
   --output data/action.json
 ```
 
@@ -134,6 +135,7 @@ python3 scripts/run_cycle.py \
 
 - Default to review mode. Do not execute posts or replies until the user clearly approves the final action.
 - If the user provides a document, parse it into mission fields first instead of drafting content immediately.
+- Treat the mission as the source of truth for content direction. Do not assume the account is about OpenClaw, agents, or developer tools unless the user brief says so.
 - If no live X source is available, operate on imported JSON opportunities and keep the workflow moving.
 - Prefer replies and quote posts over net-new posts when the opportunity is time-sensitive.
 - Reject actions that conflict with mission constraints, banned topics, or risk thresholds.

@@ -2,6 +2,8 @@
 
 `mission.json` contains the strategy and safety envelope for the skill.
 
+The mission is the source of truth for what the account is trying to grow. Do not assume a default topic or product category outside the mission.
+
 ## Core Fields
 
 - `name`: short mission name

@@ -4,7 +4,7 @@ import argparse
 import html
 import re
 
-from common import load_json, utc_now_iso, write_json
+from common import load_json, normalize_text, utc_now_iso, write_json
 
 
 def clean_text(value: str) -> str:
@@ -50,129 +50,101 @@ def extract_hooks(text: str) -> list[str]:
 
 def summarize_hook(hook: str) -> str:
     lowered = clean_text(hook).lower()
-    if "slop vibe" in lowered or ("video" in lowered and "good" in lowered):
-        return "AI output starts to matter when it stops feeling like disposable slop"
-    if "real money" in lowered or "mrr" in lowered or "profit" in lowered:
-        return "the market gets serious once agent workflows can be tied to real revenue"
-    if "memory" in lowered or "markdown" in lowered:
-        return "memory only matters if it changes how the system plans and acts"
-    if "security" in lowered or "safeguard" in lowered:
-        return "capability without operator control is not a durable product"
     words = clean_text(hook).split()
     return " ".join(words[:10]).rstrip(" ,.;:!?")
 
 
 def concise_cta(cta: str) -> str:
     normalized = clean_text(cta)
-    lowered = normalized.lower()
-    if "openclaw" in lowered:
-        return "OpenClaw is a good test case here."
     if not normalized:
         return ""
     return normalized[0].upper() + normalized[1:]
 
+def mission_topic_label(mission: dict) -> str:
+    for field in ("primary_topics", "watch_keywords"):
+        values = mission.get(field, [])
+        if isinstance(values, list):
+            for value in values:
+                cleaned = clean_text(str(value))
+                if cleaned:
+                    return cleaned
+    goal = clean_text(mission.get("goal", ""))
+    return goal or "this space"
 
-def build_reply(theme: str, stance: str, hooks: list[str], handle: str, source: str, include_question: bool, cta: str) -> tuple[str, str]:
+
+def mission_audience_label(mission: dict) -> str:
+    audience = mission.get("audience", [])
+    if isinstance(audience, list) and audience:
+        return clean_text(str(audience[0]))
+    return "the right audience"
+
+
+def mission_goal_style(mission: dict) -> str:
+    goal = clean_text(mission.get("goal", "")).lower()
+    if any(token in goal for token in ("lead", "signup", "pipeline", "sale", "revenue", "demo")):
+        return "connect attention to proof and a concrete next step"
+    if any(token in goal for token in ("trust", "credibility", "authority", "position")):
+        return "show evidence, specificity, and follow-through"
+    if any(token in goal for token in ("community", "engagement", "discussion", "conversation")):
+        return "create useful discussion and stay present in the thread"
+    if any(token in goal for token in ("awareness", "visibility", "reach", "discover")):
+        return "earn attention with a clear point of view and timely follow-up"
+    return "turn attention into repeatable outcomes"
+
+
+def topic_specific_angle(theme: str, stance: str) -> str:
     if stance == "monetization":
-        draft = (
-            "That is the real tell. Once an ecosystem starts producing cash-flowing workflows instead of demos, the conversation changes fast."
-        )
-    elif theme == "memory":
-        draft = (
-            "The interesting shift is from storing context to operationalizing it. "
-            "Notes help, but the real unlock is when memory can change planning and tool choice without becoming a black box."
-        )
-    elif theme == "workflow-market":
-        draft = (
-            "This is the right direction. The value is not just more agents, it is packaging repeatable workflows people can inspect, adapt, and actually run."
-        )
-    elif theme == "safety":
-        draft = (
-            "This is where the conversation should be. Agent capability only compounds if operators can inspect intent, constrain actions, and recover from bad plans quickly."
-        )
-    elif theme == "economics":
-        draft = (
-            "Exactly. Once the unit economics move, product strategy moves with them. "
-            "The winners will be the teams that can swap models and workflows without rewriting the whole stack."
-        )
-    else:
-        if hooks:
-            draft = f"{hooks[0]} is the right pressure test. The teams that win here will be the ones that can inspect every step, plug into existing tooling, and keep humans in the loop."
-        else:
-            draft = "Strong point. The teams that win here will be the ones that can inspect every step, plug into existing tooling, and keep humans in the loop."
+        return "tie the conversation to measurable outcomes instead of vague interest"
+    if theme == "memory":
+        return "show how the idea changes actual decision-making, not just storage"
+    if theme == "workflow-market":
+        return "make the workflow repeatable instead of leaving it as a one-off insight"
+    if theme == "safety":
+        return "pair capability with clear controls and recovery paths"
+    if theme == "economics":
+        return "translate the shift into pricing, margin, or operating leverage"
+    if theme == "media":
+        return "connect the creative angle to why people will keep paying attention"
+    return "turn the point of view into something specific, useful, and repeatable"
 
+
+def build_reply(mission: dict, theme: str, stance: str, hooks: list[str], source: str, include_question: bool, cta: str) -> tuple[str, str]:
+    topic_label = mission_topic_label(mission)
+    audience_label = mission_audience_label(mission)
+    goal_style = mission_goal_style(mission)
+    anchor = summarize_hook(hooks[0]) if hooks else "that point"
+    draft = (
+        f"The key part is {anchor}. In {topic_label}, the accounts that win with {audience_label} are the ones that {goal_style}."
+    )
+    draft += f" The stronger move is to {topic_specific_angle(theme, stance)}."
     if include_question:
-        draft += " What part do you think most teams still underestimate?"
+        draft += " What signal do you think matters most here?"
     if cta:
         draft += f" {cta}"
     rationale = f"Reply is favored because {source} already has momentum and the mission prefers timely participation."
     return draft, rationale
 
 
-def build_quote(theme: str, stance: str, hooks: list[str], cta: str) -> tuple[str, str]:
-    if stance == "monetization":
-        draft = (
-            "The market starts taking agent products seriously when users can tie them to revenue, margin, or labor saved. That is a stronger moat than novelty."
-        )
-    elif theme == "memory":
-        draft = (
-            "The next step is not just longer memory. It is memory that can influence planning, tool use, and recovery without hiding the reasoning."
-        )
-    elif theme == "workflow-market":
-        draft = (
-            "Most agent products blur capability and workflow together. The stronger model is reusable workflows that people can inspect, remix, and operationalize."
-        )
-    elif theme == "safety":
-        draft = (
-            "Agent safety gets real when operators can inspect plans, narrow permissions, and recover state quickly. Capability without control does not scale."
-        )
-    elif theme == "economics":
-        draft = (
-            "Model and infra costs are becoming product design inputs. Teams that keep their workflow layer portable will compound faster than teams locked into one stack."
-        )
-    else:
-        if hooks:
-            draft = f"What this gets right: {summarize_hook(hooks[0])}. The next wave of agent products will win on workflow fit, auditability, and control."
-        else:
-            draft = "What this gets right: developer trust comes from reliability and inspectability, not magic. The next wave of agent products will win on workflow fit, auditability, and control."
-
+def build_quote(mission: dict, theme: str, stance: str, hooks: list[str], cta: str) -> tuple[str, str]:
+    topic_label = mission_topic_label(mission)
+    goal_style = mission_goal_style(mission)
+    anchor = summarize_hook(hooks[0]) if hooks else "the core claim"
+    draft = f"What this gets right: {anchor}. In {topic_label}, the stronger move is to {goal_style}."
+    draft += f" That usually means you need to {topic_specific_angle(theme, stance)}."
     if cta:
         draft += f" {cta}"
     rationale = "Quote post is favored because the opportunity is strong but benefits from adding a distinct point of view."
     return draft, rationale
 
 
-def build_post(theme: str, stance: str, hooks: list[str], cta: str) -> tuple[str, str]:
-    if stance == "monetization":
-        draft = (
-            "Hot take: the strongest proof an agent product works is not benchmark screenshots. It is when users can point to revenue, saved time, or margin expansion."
-        )
-    elif theme == "memory":
-        draft = (
-            "Hot take: memory in agent products should not just store context. "
-            "It should change planning, tool choice, and recovery in ways operators can still inspect."
-        )
-    elif theme == "workflow-market":
-        draft = (
-            "Hot take: the durable moat in agent products is not raw model access. "
-            "It is packaging repeatable workflows people can inspect, remix, and deploy."
-        )
-    elif theme == "safety":
-        draft = (
-            "Hot take: agent safety is mostly an operations problem. "
-            "If users cannot inspect intent, constrain actions, and recover state, the product does not scale."
-        )
-    elif theme == "economics":
-        draft = (
-            "Hot take: the teams that win in AI ops will treat model costs like routing decisions, not fixed architecture. "
-            "Portability is becoming a product feature."
-        )
-    else:
-        draft = (
-            "Hot take: AI operator products only compound if users can inspect the plan, edit the workflow, and reproduce the result. "
-            "Anything less stays a demo."
-        )
-
+def build_post(mission: dict, theme: str, stance: str, hooks: list[str], cta: str) -> tuple[str, str]:
+    topic_label = mission_topic_label(mission)
+    audience_label = mission_audience_label(mission)
+    goal_style = mission_goal_style(mission)
+    draft = f"Hot take: in {topic_label}, growth compounds when teams {goal_style}."
+    draft += f" The winners with {audience_label} will be the ones that {topic_specific_angle(theme, stance)}."
+    if hooks:
+        draft += f" The market signal here is {summarize_hook(hooks[0])}."
     if cta:
         draft += f" {cta}"
     rationale = "Standalone post is favored because the topic is aligned but not urgent enough to attach to a single source post."
@@ -180,7 +152,6 @@ def build_post(theme: str, stance: str, hooks: list[str], cta: str) -> tuple[str
 
 
 def build_draft(mission: dict, opportunity: dict) -> tuple[str, str]:
-    handle = mission.get("account_handle") or "your account"
     voice = mission.get("voice", "direct, clear, credible")
     cta = concise_cta(mission.get("cta", ""))
     source = opportunity.get("source_account", "the source")
@@ -193,11 +164,11 @@ def build_draft(mission: dict, opportunity: dict) -> tuple[str, str]:
     hooks = extract_hooks(text)
 
     if action == "reply":
-        draft, rationale = build_reply(theme, stance, hooks, handle, source, reply_window_open, cta)
+        draft, rationale = build_reply(mission, theme, stance, hooks, source, reply_window_open, cta)
     elif action == "quote_post":
-        draft, rationale = build_quote(theme, stance, hooks, cta)
+        draft, rationale = build_quote(mission, theme, stance, hooks, cta)
     elif action == "post":
-        draft, rationale = build_post(theme, stance, hooks, cta)
+        draft, rationale = build_post(mission, theme, stance, hooks, cta)
     else:
         draft = ""
         rationale = "Observe is favored because the risk is too high or the fit is too weak."
@@ -207,7 +178,7 @@ def build_draft(mission: dict, opportunity: dict) -> tuple[str, str]:
 
     notes = (
         f"Voice: {voice}. Theme: {theme}. Stance: {stance}. Source account: {source}. "
-        f"Source text summary: {text[:180]}"
+        f"Mission topic: {normalize_text(mission_topic_label(mission))}. Source text summary: {text[:180]}"
     )
     return draft, f"{rationale} {notes}"
 

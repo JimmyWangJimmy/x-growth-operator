@@ -2,11 +2,12 @@
 
 `X Growth Operator` is an OpenClaw-style skill for running review-first X growth workflows.
 
-It turns a brief into a structured mission, pulls live opportunities from X, ranks them, drafts posts or interactions, and can execute approved actions through official X OAuth credentials.
+It turns a user brief into a structured mission, derives what to watch from that mission, pulls live opportunities from X, ranks them, drafts posts or interactions, and can execute approved actions through official X OAuth credentials.
 
 ## What It Does
 
 - Parse a brief or prompt into a reusable mission
+- Infer the operating focus from the user's goals, topics, audience, and constraints
 - Pull opportunities from Desearch, sample JSON, or manual surf notes
 - Score opportunities for relevance, urgency, and risk
 - Draft `post`, `reply`, or `quote_post` actions
@@ -57,14 +58,15 @@ python3 scripts/ingest_goal.py \
   --mission data/mission.json
 ```
 
-Search live X and build a ranked plan:
+Search live X and build a ranked plan from the mission:
 
 ```bash
 python3 scripts/live_search_and_plan.py \
   --mission data/mission.json \
-  --query "openclaw OR local agent OR coding agent" \
   --count 10
 ```
+
+You can still override the query manually with `--query`, but the default path is mission-driven.
 
 Draft one action:
 
@@ -101,6 +103,7 @@ Current limits:
 
 - `reply` and `quote_post` can be rejected by X conversation permissions
 - Opportunity filtering is still tuned for review-first operation, not full autonomy
+- The example files are OpenClaw-themed demo data; the live workflow is driven by the user's own mission
 
 ## Package The Skill
 
