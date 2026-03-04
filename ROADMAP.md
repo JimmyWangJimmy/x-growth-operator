@@ -40,6 +40,7 @@ In progress:
 - `core/scoring.py` for opportunity scoring and action selection
 - `core/drafting.py` for action draft generation
 - `core/execution.py` for action mapping, preflight, and X execution orchestration
+- `core/storage.py` for file-backed mission, memory, action, and execution state
 
 ## Stage 4: Product Surface
 

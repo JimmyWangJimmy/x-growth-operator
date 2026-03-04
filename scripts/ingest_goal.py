@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from core.mission import mission_from_text
-from common import write_json
+from core.storage import LocalStateStore
 
 
 def main() -> int:
@@ -24,7 +24,7 @@ def main() -> int:
 
     raw_text = args.prompt or Path(args.doc).read_text(encoding="utf-8")
     mission = mission_from_text(raw_text)
-    output_path = write_json(args.mission, mission)
+    output_path = LocalStateStore(Path(args.mission).parent).save_mission(mission, Path(args.mission).name)
 
     print(f"Wrote mission to {output_path}")
     print(f"Mission goal: {mission['goal']}")

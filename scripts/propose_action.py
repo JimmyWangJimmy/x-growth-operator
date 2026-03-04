@@ -8,8 +8,9 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from common import load_json, utc_now_iso, write_json
 from core.drafting import build_draft
+from core.storage import LocalStateStore
+from common import load_json, utc_now_iso
 
 
 def main() -> int:
@@ -42,7 +43,7 @@ def main() -> int:
         "rationale": rationale,
         "requires_approval": True,
     }
-    output_path = write_json(args.output, action)
+    output_path = LocalStateStore(Path(args.output).parent).save_action(action, Path(args.output).name)
 
     print(f"Wrote action to {output_path}")
     print(f"Action: {action['action_type']} score={action['score']} risk={action['risk_level']}")

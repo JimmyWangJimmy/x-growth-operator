@@ -1,9 +1,16 @@
 from __future__ import annotations
 
 from collections import Counter
+import sys
+from pathlib import Path
 from typing import Any
 
-from common import load_json, write_json
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.common import load_json
+from core.storage import LocalStateStore
 
 
 def default_memory() -> dict[str, Any]:
@@ -28,7 +35,7 @@ def load_memory(path: str) -> dict[str, Any]:
 
 
 def save_memory(path: str, payload: dict[str, Any]) -> None:
-    write_json(path, payload)
+    LocalStateStore(Path(path).parent).save_memory(payload, Path(path).name)
 
 
 def apply_feedback(memory: dict[str, Any], feedback_items: list[dict[str, Any]], updated_at: str) -> dict[str, Any]:

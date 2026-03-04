@@ -10,7 +10,8 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from core.execution import preflight_action, run_x_action
-from common import append_jsonl, load_json, utc_now_iso, write_json
+from core.storage import LocalStateStore
+from common import load_json, utc_now_iso
 
 
 def main() -> int:
@@ -25,6 +26,8 @@ def main() -> int:
 
     mission = load_json(args.mission)
     action = load_json(args.action)
+    action_store = LocalStateStore(Path(args.action).parent)
+    log_store = LocalStateStore(Path(args.log).parent)
 
     if action.get("requires_approval", True) and not args.approved:
         raise SystemExit("Refusing to execute without --approved.")
@@ -61,12 +64,12 @@ def main() -> int:
             result["preflight"] = json.loads(preflight_output) if preflight_output else None
         except json.JSONDecodeError:
             result["preflight_raw"] = preflight_output
-    append_jsonl(args.log, result)
+    log_store.append_execution_event(result, Path(args.log).name)
 
     action["status"] = "executed"
     action["executed_at"] = result["executed_at"]
     action["execution_mode"] = args.mode
-    write_json(args.action, action)
+    action_store.save_action(action, Path(args.action).name)
 
     print(f"Execution recorded for {action.get('id')} in {args.mode} mode")
     return 0
