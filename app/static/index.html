@@ -16,7 +16,10 @@
             Inspect the current mission, ranked actions, memory, and recent executions without digging through raw JSON.
           </p>
         </div>
-        <button id="refreshButton" class="refresh-button">Refresh State</button>
+        <div class="hero-actions">
+          <button id="refreshButton" class="refresh-button">Refresh State</button>
+          <div id="statusBanner" class="status-banner">Ready.</div>
+        </div>
       </header>
 
       <main class="dashboard-grid">
@@ -40,6 +43,11 @@
           <div class="panel-head">
             <h2>Current Action</h2>
             <span id="actionType" class="chip">None</span>
+          </div>
+          <div class="action-toolbar">
+            <button id="preflightButton" class="secondary-button">Preflight</button>
+            <button id="dryRunButton" class="secondary-button">Dry Run</button>
+            <button id="executeButton" class="primary-button">Execute Live</button>
           </div>
           <div id="currentAction" class="action-card empty-state">No proposed action found.</div>
         </section>

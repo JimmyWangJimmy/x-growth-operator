@@ -39,6 +39,12 @@ body {
   margin-bottom: 28px;
 }
 
+.hero-actions {
+  display: grid;
+  gap: 12px;
+  justify-items: end;
+}
+
 .eyebrow {
   margin: 0 0 8px;
   text-transform: uppercase;
@@ -69,6 +75,42 @@ h1 {
   font: inherit;
   cursor: pointer;
   box-shadow: var(--shadow);
+}
+
+.primary-button,
+.secondary-button {
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.primary-button {
+  background: var(--accent);
+  color: #fff8f1;
+}
+
+.secondary-button {
+  background: rgba(35, 22, 13, 0.08);
+  color: var(--text);
+}
+
+.primary-button:disabled,
+.secondary-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.status-banner {
+  max-width: 340px;
+  border-radius: 18px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 .dashboard-grid {
@@ -120,6 +162,13 @@ h1 {
 
 .chip.small {
   padding: 4px 8px;
+}
+
+.action-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
 .meta-grid,
@@ -196,6 +245,12 @@ h1 {
 .list-item p + p,
 .action-card p + p {
   margin-top: 8px;
+}
+
+.list-item-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
 }
 
 .draft {

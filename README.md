@@ -122,6 +122,12 @@ The dashboard reads the current contents of `data/` and shows:
 - recent execution log
 - generated state files
 
+It also provides a minimal review loop:
+
+- draft an action from ranked opportunities
+- run interaction preflight on the current action
+- execute the current action in `dry-run` or `x-api` mode
+
 ## Current Status
 
 What works today:

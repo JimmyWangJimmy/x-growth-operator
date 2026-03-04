@@ -1,4 +1,25 @@
 const byId = (id) => document.getElementById(id);
+let currentActionId = "";
+
+function setStatus(message, kind = "info") {
+  const target = byId("statusBanner");
+  if (!target) return;
+  target.textContent = message;
+  target.style.color = kind === "error" ? "#8c2c1a" : kind === "success" ? "#2c5a46" : "";
+}
+
+async function postJson(path, payload = {}) {
+  const response = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const body = await response.json();
+  if (!response.ok || body.ok === false) {
+    throw new Error(body.error || `Request failed: ${response.status}`);
+  }
+  return body;
+}
 
 function renderKeyValueBlock(target, entries) {
   if (!entries.length) {
@@ -55,6 +76,9 @@ function renderPlan(plan) {
           </div>
           <p>${item.target_account || "unknown"} · score ${item.score} · readiness ${item.interaction_readiness}</p>
           <p class="muted">${item.why_now || ""}</p>
+          <div class="list-item-actions">
+            <button class="secondary-button draft-button" data-opportunity-id="${item.opportunity_id}">Draft</button>
+          </div>
         </article>
       `
     )
@@ -62,8 +86,13 @@ function renderPlan(plan) {
 }
 
 function renderCurrentAction(action) {
+  currentActionId = action?.id || "";
   byId("actionType").textContent = action?.action_type || "None";
   const target = byId("currentAction");
+  const disabled = !currentActionId;
+  byId("preflightButton").disabled = disabled;
+  byId("dryRunButton").disabled = disabled;
+  byId("executeButton").disabled = disabled;
   if (!action || !action.id) {
     target.className = "action-card empty-state";
     target.textContent = "No proposed action found.";
@@ -132,6 +161,11 @@ function renderOpportunities(payload) {
           </div>
           <p>${item.score} · ${item.risk_level} · ${(item.algorithm_hints || {}).interaction_readiness || "unknown"}</p>
           <p class="muted">${(item.text || "").slice(0, 140)}</p>
+          ${
+            item.recommended_action && item.recommended_action !== "observe"
+              ? `<div class="list-item-actions"><button class="secondary-button draft-button" data-opportunity-id="${item.id}">Draft</button></div>`
+              : ""
+          }
         </article>
       `
     )
@@ -185,14 +219,79 @@ async function loadState() {
   renderOpportunities(data.opportunities_scored);
   renderExecutions(data.execution_log);
   renderFiles(data.generated_files);
+  wireActionButtons();
 }
 
-byId("refreshButton").addEventListener("click", () => {
-  loadState().catch((error) => {
-    console.error(error);
+function wireActionButtons() {
+  document.querySelectorAll(".draft-button").forEach((button) => {
+    button.onclick = async () => {
+      const opportunityId = button.dataset.opportunityId;
+      if (!opportunityId) return;
+      try {
+        setStatus(`Drafting action for ${opportunityId}...`);
+        await postJson("/api/draft", { opportunity_id: opportunityId });
+        await loadState();
+        setStatus(`Draft created from ${opportunityId}.`, "success");
+      } catch (error) {
+        console.error(error);
+        setStatus(error.message, "error");
+      }
+    };
   });
+}
+
+byId("refreshButton").addEventListener("click", async () => {
+  try {
+    setStatus("Refreshing state...");
+    await loadState();
+    setStatus("State refreshed.", "success");
+  } catch (error) {
+    console.error(error);
+    setStatus(error.message, "error");
+  }
+});
+
+byId("preflightButton").addEventListener("click", async () => {
+  if (!currentActionId) return;
+  try {
+    setStatus("Running preflight...");
+    const response = await postJson("/api/preflight", {});
+    const decision = response.preflight?.decision || "unknown";
+    setStatus(`Preflight decision: ${decision}.`, decision === "allow" ? "success" : "error");
+  } catch (error) {
+    console.error(error);
+    setStatus(error.message, "error");
+  }
+});
+
+byId("dryRunButton").addEventListener("click", async () => {
+  if (!currentActionId) return;
+  try {
+    setStatus("Executing dry run...");
+    await postJson("/api/execute", { mode: "dry-run" });
+    await loadState();
+    setStatus("Dry run executed.", "success");
+  } catch (error) {
+    console.error(error);
+    setStatus(error.message, "error");
+  }
+});
+
+byId("executeButton").addEventListener("click", async () => {
+  if (!currentActionId) return;
+  if (!window.confirm("Execute current action live on X API?")) return;
+  try {
+    setStatus("Executing live action...");
+    await postJson("/api/execute", { mode: "x-api" });
+    await loadState();
+    setStatus("Live execution completed.", "success");
+  } catch (error) {
+    console.error(error);
+    setStatus(error.message, "error");
+  }
 });
 
 loadState().catch((error) => {
   console.error(error);
+  setStatus(error.message, "error");
 });
