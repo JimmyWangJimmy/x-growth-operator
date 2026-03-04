@@ -11,6 +11,11 @@ def clean_text(value: str) -> str:
     return " ".join(html.unescape(value or "").split())
 
 
+def strip_leading_mentions(text: str) -> str:
+    cleaned = clean_text(text)
+    return re.sub(r"^(?:@\w+\s+)+", "", cleaned).strip()
+
+
 def infer_theme(text: str) -> str:
     lowered = clean_text(text).lower()
     if any(token in lowered for token in ("memory", "markdown", "weights", "context", "knowledge")):
@@ -42,15 +47,22 @@ def detect_stance(text: str) -> str:
 
 
 def extract_hooks(text: str) -> list[str]:
-    cleaned = clean_text(text)
+    cleaned = strip_leading_mentions(text)
     parts = re.split(r"[.!?]\s+", cleaned)
     hooks = [part.strip(" .") for part in parts if len(part.strip()) > 24]
     return hooks[:3]
 
 
 def summarize_hook(hook: str) -> str:
-    lowered = clean_text(hook).lower()
-    words = clean_text(hook).split()
+    cleaned = strip_leading_mentions(hook)
+    lowered = cleaned.lower()
+    if "i use it" in lowered or "i use" in lowered:
+        return "operators are describing repeatable real-world usage"
+    if cleaned.startswith(("but ", "yes ", "no ", "and ")):
+        return ""
+    words = cleaned.split()
+    if len(words) < 5:
+        return ""
     return " ".join(words[:10]).rstrip(" ,.;:!?")
 
 
@@ -151,6 +163,21 @@ def build_post(mission: dict, theme: str, stance: str, hooks: list[str], cta: st
     return draft, rationale
 
 
+def build_post_from_signal(mission: dict, theme: str, stance: str, hooks: list[str], cta: str) -> tuple[str, str]:
+    topic_label = mission_topic_label(mission)
+    audience_label = mission_audience_label(mission)
+    goal_style = mission_goal_style(mission)
+    anchor = summarize_hook(hooks[0]) if hooks else ""
+    anchor_text = anchor or "operators are starting to describe concrete, repeatable usage"
+    draft = f"Seeing more evidence that in {topic_label}, {anchor_text}."
+    draft += f" The teams that win with {audience_label} will be the ones that {goal_style}."
+    draft += f" The practical edge is to {topic_specific_angle(theme, stance)}."
+    if cta:
+        draft += f" {cta}"
+    rationale = "Standalone post is favored because the source signal is useful, but interaction readiness is too constrained for a direct reply or quote."
+    return draft, rationale
+
+
 def build_draft(mission: dict, opportunity: dict) -> tuple[str, str]:
     voice = mission.get("voice", "direct, clear, credible")
     cta = concise_cta(mission.get("cta", ""))
@@ -159,6 +186,7 @@ def build_draft(mission: dict, opportunity: dict) -> tuple[str, str]:
     action = opportunity.get("recommended_action", "observe")
     hints = opportunity.get("algorithm_hints", {})
     reply_window_open = bool(hints.get("reply_window_open"))
+    interaction_readiness = hints.get("interaction_readiness", "open")
     theme = infer_theme(text)
     stance = detect_stance(text)
     hooks = extract_hooks(text)
@@ -168,7 +196,10 @@ def build_draft(mission: dict, opportunity: dict) -> tuple[str, str]:
     elif action == "quote_post":
         draft, rationale = build_quote(mission, theme, stance, hooks, cta)
     elif action == "post":
-        draft, rationale = build_post(mission, theme, stance, hooks, cta)
+        if interaction_readiness in {"restricted", "thread_reply"}:
+            draft, rationale = build_post_from_signal(mission, theme, stance, hooks, cta)
+        else:
+            draft, rationale = build_post(mission, theme, stance, hooks, cta)
     else:
         draft = ""
         rationale = "Observe is favored because the risk is too high or the fit is too weak."
@@ -178,7 +209,8 @@ def build_draft(mission: dict, opportunity: dict) -> tuple[str, str]:
 
     notes = (
         f"Voice: {voice}. Theme: {theme}. Stance: {stance}. Source account: {source}. "
-        f"Mission topic: {normalize_text(mission_topic_label(mission))}. Source text summary: {text[:180]}"
+        f"Mission topic: {normalize_text(mission_topic_label(mission))}. Interaction readiness: {interaction_readiness}. "
+        f"Source text summary: {text[:180]}"
     )
     return draft, f"{rationale} {notes}"
 
