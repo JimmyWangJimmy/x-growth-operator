@@ -1,19 +1,29 @@
 # X Growth Operator
 
-An OpenClaw-style skill for X operations.
+`X Growth Operator` is an OpenClaw-style skill for running review-first X growth workflows.
 
-It turns a brief into a mission, pulls opportunities from X, scores them, drafts actions, and can execute approved posts through the official X OAuth API.
+It turns a brief into a structured mission, pulls live opportunities from X, ranks them, drafts posts or interactions, and can execute approved actions through official X OAuth credentials.
 
-## What It Includes
+## What It Does
 
-- `SKILL.md`: the skill entrypoint and operating rules
-- `scripts/`: deterministic workflow and execution scripts
-- `references/`: scoring and mission references
-- `examples/`: sample briefs, opportunities, notes, and queries
+- Parse a brief or prompt into a reusable mission
+- Pull opportunities from Desearch, sample JSON, or manual surf notes
+- Score opportunities for relevance, urgency, and risk
+- Draft `post`, `reply`, or `quote_post` actions
+- Execute approved actions through the official X API
+- Persist an audit trail and lightweight memory loop
+
+## Skill Layout
+
+- `SKILL.md`: skill entrypoint and operating rules
+- `agents/openai.yaml`: UI metadata
+- `scripts/`: workflow, scoring, and execution scripts
+- `references/`: mission schema and scoring reference
+- `examples/`: sample briefs, notes, and opportunity data
 
 ## Install
 
-Clone or copy this folder into your local skills directory, or keep it as a standalone repo and point OpenClaw at it.
+Clone the repo or drop the packaged skill folder into your local skills directory.
 
 Install Node dependencies:
 
@@ -30,7 +40,7 @@ Create `scripts/.env` from `scripts/.env.example` and fill:
 - `X_ACCESS_TOKEN_SECRET`
 - `DESEARCH_API_KEY`
 
-If you need a proxy for X:
+If you need a proxy for X, also set:
 
 - `HTTP_PROXY`
 - `HTTPS_PROXY`
@@ -42,10 +52,12 @@ If you need a proxy for X:
 Build a mission:
 
 ```bash
-python3 scripts/ingest_goal.py --doc examples/brand_brief.md --mission data/mission.json
+python3 scripts/ingest_goal.py \
+  --doc examples/brand_brief.md \
+  --mission data/mission.json
 ```
 
-Run live search to plan:
+Search live X and build a ranked plan:
 
 ```bash
 python3 scripts/live_search_and_plan.py \
@@ -54,7 +66,7 @@ python3 scripts/live_search_and_plan.py \
   --count 10
 ```
 
-Generate an action:
+Draft one action:
 
 ```bash
 python3 scripts/propose_action.py \
@@ -75,23 +87,33 @@ python3 scripts/execute_action.py \
   --mode x-api
 ```
 
-## Share It
+## Current Status
 
-Use the packaging script to build a clean skill bundle without secrets or generated data:
+What works today:
+
+- Mission ingestion
+- Live X search through Desearch
+- Opportunity scoring and action planning
+- Approved original post execution through X OAuth
+- Local execution logs and memory updates
+
+Current limits:
+
+- `reply` and `quote_post` can be rejected by X conversation permissions
+- Opportunity filtering is still tuned for review-first operation, not full autonomy
+
+## Package The Skill
+
+Build a clean bundle without secrets or generated state:
 
 ```bash
 python3 scripts/build_skill_bundle.py
 ```
 
-The zip will be written to `dist/x-growth-operator-skill.zip`.
+This writes:
 
-## Current Limits
+`dist/x-growth-operator-skill.zip`
 
-- Reply and quote actions can be blocked by X conversation permissions
-- The best-supported path today is:
-  - mission
-  - live search
-  - scoring
-  - draft
-  - approved original post
+## Next
 
+The roadmap for turning this skill into a larger product is in `ROADMAP.md`.
