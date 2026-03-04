@@ -41,6 +41,8 @@ In progress:
 - `core/drafting.py` for action draft generation
 - `core/execution.py` for action mapping, preflight, and X execution orchestration
 - `core/storage.py` for file-backed mission, memory, action, and execution state
+- `core/planning.py` for ranked action plan generation
+- `core/feedback.py` for feedback aggregation and cycle recommendations
 
 ## Stage 4: Product Surface
 

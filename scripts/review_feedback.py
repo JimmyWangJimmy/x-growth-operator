@@ -1,9 +1,16 @@
 from __future__ import annotations
 
 import argparse
+import sys
+from pathlib import Path
 
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from core.feedback import apply_feedback, build_feedback_report
 from common import load_json, utc_now_iso, write_json
-from memory_store import apply_feedback, load_memory, save_memory
+from memory_store import load_memory, save_memory
 
 
 def main() -> int:
@@ -21,53 +28,11 @@ def main() -> int:
     new_memory = apply_feedback(memory, feedback, updated_at)
     save_memory(args.memory, new_memory)
 
-    positive = [item for item in feedback if item.get("result") == "positive"]
-    negative = [item for item in feedback if item.get("result") == "negative"]
-    report = {
-        "generated_at": updated_at,
-        "mission_name": mission.get("name"),
-        "positive_count": len(positive),
-        "negative_count": len(negative),
-        "top_success_topics": sorted(
-            new_memory["successful_topics"].items(),
-            key=lambda pair: pair[1],
-            reverse=True,
-        )[:5],
-        "top_action_types": sorted(
-            new_memory["successful_action_types"].items(),
-            key=lambda pair: pair[1],
-            reverse=True,
-        )[:5],
-        "high_signal_accounts": sorted(
-            new_memory["high_signal_accounts"].items(),
-            key=lambda pair: pair[1],
-            reverse=True,
-        )[:5],
-        "avoid_accounts": sorted(
-            new_memory["avoid_accounts"].items(),
-            key=lambda pair: pair[1],
-            reverse=True,
-        )[:5],
-        "recommendation": build_recommendation(new_memory),
-    }
+    report = build_feedback_report(mission.get("name"), feedback, new_memory, updated_at)
     output_path = write_json(args.output, report)
     print(f"Wrote feedback report to {output_path}")
     print(report["recommendation"])
     return 0
-
-
-def build_recommendation(memory: dict) -> str:
-    success_topics = sorted(memory["successful_topics"].items(), key=lambda pair: pair[1], reverse=True)
-    high_signal_accounts = sorted(memory["high_signal_accounts"].items(), key=lambda pair: pair[1], reverse=True)
-    if success_topics and high_signal_accounts:
-        return (
-            f"Lean harder into topics like {success_topics[0][0]} and prioritize accounts like "
-            f"{high_signal_accounts[0][0]} in the next cycle."
-        )
-    if success_topics:
-        return f"Lean harder into topics like {success_topics[0][0]} in the next cycle."
-    return "Not enough feedback yet. Keep collecting reviewed outcomes."
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
