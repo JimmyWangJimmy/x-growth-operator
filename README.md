@@ -18,7 +18,7 @@ It turns a user brief into a structured mission, derives what to watch from that
 
 - `SKILL.md`: skill entrypoint and operating rules
 - `agents/openai.yaml`: UI metadata
-- `core/`: reusable mission, scoring, and drafting modules
+- `core/`: reusable mission, scoring, drafting, and execution modules
 - `scripts/`: workflow, scoring, and execution scripts
 - `references/`: mission schema and scoring reference
 - `examples/`: sample briefs, notes, and opportunity data

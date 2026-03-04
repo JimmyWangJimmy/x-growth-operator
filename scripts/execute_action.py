@@ -2,8 +2,14 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
+import sys
+from pathlib import Path
 
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from core.execution import preflight_action, run_x_action
 from common import append_jsonl, load_json, utc_now_iso, write_json
 
 
@@ -27,27 +33,12 @@ def main() -> int:
     if args.mode == "x-api":
         preflight_output = None
         if action.get("action_type") in {"reply", "quote_post"} and not args.skip_preflight:
-            preflight = subprocess.run(
-                ["python3", "scripts/preflight_x_action.py", "--action", args.action],
-                check=False,
-                capture_output=True,
-                text=True,
-            )
-            if preflight.returncode == 2:
-                raise SystemExit(preflight.stdout.strip() or preflight.stderr.strip() or "Interaction preflight blocked execution")
-            if preflight.returncode != 0:
-                raise SystemExit(preflight.stderr.strip() or preflight.stdout.strip() or "Interaction preflight failed")
-            preflight_output = preflight.stdout.strip()
+            preflight_result = preflight_action(action)
+            preflight_output = json.dumps(preflight_result, ensure_ascii=False)
+            if preflight_result.get("decision") == "block":
+                raise SystemExit(preflight_output)
 
-        completed = subprocess.run(
-            ["python3", "scripts/execute_x_action.py", "--action", args.action],
-            check=False,
-            capture_output=True,
-            text=True,
-        )
-        if completed.returncode != 0:
-            raise SystemExit(completed.stderr.strip() or completed.stdout.strip() or "X execution failed")
-        execution_output = completed.stdout.strip()
+        execution_output = run_x_action(action)
 
     result = {
         "executed_at": utc_now_iso(),

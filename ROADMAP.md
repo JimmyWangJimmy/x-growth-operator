@@ -39,6 +39,7 @@ In progress:
 - `core/mission.py` for mission parsing and mission-derived helpers
 - `core/scoring.py` for opportunity scoring and action selection
 - `core/drafting.py` for action draft generation
+- `core/execution.py` for action mapping, preflight, and X execution orchestration
 
 ## Stage 4: Product Surface
 
