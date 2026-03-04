@@ -1,0 +1,26 @@
+.DS_Store
+dist/
+__pycache__/
+*.pyc
+
+# Local secrets
+/scripts/.env
+
+# Node dependencies
+/scripts/node_modules/
+
+# Generated data
+/data/action*.json
+/data/action_plan.json
+/data/*_action.json
+/data/*_candidate*.json
+/data/*_focus*.json
+/data/*_timeline.json
+/data/*_scored*.json
+/data/*_hunt*.json
+/data/execution_log.jsonl
+/data/feedback_report.json
+/data/live_action.json
+/data/memory.json
+/data/mission.json
+/data/opportunities*.json
