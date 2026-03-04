@@ -100,6 +100,28 @@ python3 scripts/execute_action.py \
 
 For `reply` and `quote_post`, execution now runs a preflight check first to inspect the target tweet's reply settings and block likely 403s before posting.
 
+## Review Dashboard
+
+Run the local review app:
+
+```bash
+python3 app/server.py
+```
+
+Then open:
+
+`http://127.0.0.1:8787`
+
+The dashboard reads the current contents of `data/` and shows:
+
+- mission
+- ranked action plan
+- current proposed action
+- memory signals
+- scored opportunities
+- recent execution log
+- generated state files
+
 ## Current Status
 
 What works today:

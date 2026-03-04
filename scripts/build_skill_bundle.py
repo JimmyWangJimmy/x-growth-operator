@@ -14,6 +14,7 @@ INCLUDE_PREFIXES = (
     "ROADMAP.md",
     "LICENSE",
     "agents/openai.yaml",
+    "app/",
     "core/",
     "references/",
     "examples/",

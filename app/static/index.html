@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>X Growth Operator Dashboard</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Review Dashboard</p>
+          <h1>X Growth Operator</h1>
+          <p class="hero-copy">
+            Inspect the current mission, ranked actions, memory, and recent executions without digging through raw JSON.
+          </p>
+        </div>
+        <button id="refreshButton" class="refresh-button">Refresh State</button>
+      </header>
+
+      <main class="dashboard-grid">
+        <section class="panel mission-panel">
+          <div class="panel-head">
+            <h2>Mission</h2>
+            <span id="missionName" class="chip">No mission loaded</span>
+          </div>
+          <div id="missionMeta" class="meta-grid"></div>
+        </section>
+
+        <section class="panel plan-panel">
+          <div class="panel-head">
+            <h2>Action Plan</h2>
+            <span id="planCount" class="chip">0 actions</span>
+          </div>
+          <div id="planList" class="list-block empty-state">No action plan found.</div>
+        </section>
+
+        <section class="panel action-panel">
+          <div class="panel-head">
+            <h2>Current Action</h2>
+            <span id="actionType" class="chip">None</span>
+          </div>
+          <div id="currentAction" class="action-card empty-state">No proposed action found.</div>
+        </section>
+
+        <section class="panel memory-panel">
+          <div class="panel-head">
+            <h2>Memory</h2>
+            <span class="chip">Learning Loop</span>
+          </div>
+          <div id="memoryBlock" class="memory-grid empty-state">No memory file found.</div>
+        </section>
+
+        <section class="panel opportunity-panel">
+          <div class="panel-head">
+            <h2>Top Opportunities</h2>
+            <span id="opportunityCount" class="chip">0 items</span>
+          </div>
+          <div id="opportunityList" class="list-block empty-state">No scored opportunities found.</div>
+        </section>
+
+        <section class="panel execution-panel">
+          <div class="panel-head">
+            <h2>Recent Executions</h2>
+            <span id="executionCount" class="chip">0 events</span>
+          </div>
+          <div id="executionList" class="list-block empty-state">No executions recorded.</div>
+        </section>
+
+        <section class="panel files-panel">
+          <div class="panel-head">
+            <h2>Generated Files</h2>
+            <span class="chip">data/</span>
+          </div>
+          <div id="fileList" class="file-list empty-state">No generated files found.</div>
+        </section>
+      </main>
+    </div>
+    <script src="/app.js" defer></script>
+  </body>
+  </html>
