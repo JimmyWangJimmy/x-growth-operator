@@ -58,6 +58,14 @@ python3 scripts/ingest_goal.py \
   --mission data/mission.json
 ```
 
+Freeform briefs also work:
+
+```bash
+python3 scripts/ingest_goal.py \
+  --doc examples/freeform_brief.md \
+  --mission data/mission.json
+```
+
 Search live X and build a ranked plan from the mission:
 
 ```bash

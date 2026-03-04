@@ -36,6 +36,8 @@ python3 scripts/ingest_goal.py \
 
 You may also pass `--prompt` instead of `--doc`.
 
+The brief can be structured with explicit sections or written as freeform natural language. The parser should infer goals, audience, topics, constraints, CTA, and risk tolerance from either format.
+
 2. Gather opportunities:
 
 ```bash
@@ -147,6 +149,7 @@ python3 scripts/run_cycle.py \
 ## Resources
 
 - `examples/brand_brief.md`: sample source document for mission ingestion
+- `examples/freeform_brief.md`: sample freeform brief for mission ingestion
 - `examples/opportunities.json`: sample X opportunities for local testing
 - `examples/feedback.json`: sample outcome data for memory updates
 - `examples/surf_notes.md`: sample manual browser-surf notes
