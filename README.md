@@ -97,6 +97,8 @@ python3 scripts/execute_action.py \
   --mode x-api
 ```
 
+For `reply` and `quote_post`, execution now runs a preflight check first to inspect the target tweet's reply settings and block likely 403s before posting.
+
 ## Current Status
 
 What works today:

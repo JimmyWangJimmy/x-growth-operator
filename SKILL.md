@@ -93,6 +93,8 @@ python3 scripts/execute_action.py \
   --log data/execution_log.jsonl
 ```
 
+For `reply` and `quote_post`, execution should run the preflight gate first. It inspects the target tweet's reply settings and blocks likely permission failures before posting.
+
 For real X execution, first install Node dependencies and configure X OAuth credentials, then run:
 
 ```bash
@@ -136,6 +138,7 @@ python3 scripts/run_cycle.py \
 ## Rules
 
 - Default to review mode. Do not execute posts or replies until the user clearly approves the final action.
+- For `reply` and `quote_post`, honor the interaction preflight result unless the user explicitly chooses to bypass it.
 - If the user provides a document, parse it into mission fields first instead of drafting content immediately.
 - Treat the mission as the source of truth for content direction. Do not assume the account is about OpenClaw, agents, or developer tools unless the user brief says so.
 - If no live X source is available, operate on imported JSON opportunities and keep the workflow moving.

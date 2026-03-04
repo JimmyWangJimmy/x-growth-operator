@@ -242,6 +242,24 @@ async function getCurrentUser() {
   }, null, 2));
 }
 
+async function getTweet(tweetId) {
+  const result = await signedRequest("GET", `/2/tweets/${tweetId}`, {
+    query: {
+      "tweet.fields": "author_id,conversation_id,created_at,entities,referenced_tweets,reply_settings,text",
+    },
+  });
+  if (!result.ok) {
+    throw new Error(JSON.stringify(result));
+  }
+
+  console.log(JSON.stringify({
+    ok: true,
+    action: "tweet",
+    baseUrl: result.baseUrl,
+    tweet: result.data.data,
+  }, null, 2));
+}
+
 function safeError(error) {
   const message = error && error.message ? error.message : String(error);
   try {
@@ -282,6 +300,18 @@ program
   .action(async () => {
     try {
       await getCurrentUser();
+    } catch (error) {
+      console.error(JSON.stringify(safeError(error), null, 2));
+      process.exit(1);
+    }
+  });
+
+program
+  .command("tweet")
+  .requiredOption("--id <id>", "Tweet id")
+  .action(async (options) => {
+    try {
+      await getTweet(options.id);
     } catch (error) {
       console.error(JSON.stringify(safeError(error), null, 2));
       process.exit(1);
