@@ -45,6 +45,12 @@ body {
   justify-items: end;
 }
 
+.top-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
 .eyebrow {
   margin: 0 0 8px;
   text-transform: uppercase;

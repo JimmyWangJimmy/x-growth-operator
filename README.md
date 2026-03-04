@@ -67,6 +67,14 @@ python3 scripts/ingest_goal.py \
   --mission data/mission.json
 ```
 
+Chinese freeform briefs are also supported:
+
+```bash
+python3 scripts/ingest_goal.py \
+  --doc examples/freeform_brief_zh.md \
+  --mission data/mission.json
+```
+
 Search live X and build a ranked plan from the mission:
 
 ```bash
@@ -127,6 +135,7 @@ It also provides a minimal review loop:
 - draft an action from ranked opportunities
 - run interaction preflight on the current action
 - execute the current action in `dry-run` or `x-api` mode
+- switch dashboard language between English and Chinese
 
 ## Current Status
 

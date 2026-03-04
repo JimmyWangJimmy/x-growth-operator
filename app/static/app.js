@@ -1,5 +1,139 @@
 const byId = (id) => document.getElementById(id);
 let currentActionId = "";
+let currentLang = (navigator.language || "").toLowerCase().startsWith("zh") ? "zh" : "en";
+
+const I18N = {
+  en: {
+    eyebrow: "Review Dashboard",
+    hero_copy: "Inspect the current mission, ranked actions, memory, and recent executions without digging through raw JSON.",
+    refresh: "Refresh State",
+    ready: "Ready.",
+    mission: "Mission",
+    no_mission: "No mission loaded",
+    action_plan: "Action Plan",
+    no_action_plan: "No action plan found.",
+    current_action: "Current Action",
+    preflight: "Preflight",
+    dry_run: "Dry Run",
+    execute_live: "Execute Live",
+    no_action: "No proposed action found.",
+    memory: "Memory",
+    learning_loop: "Learning Loop",
+    no_memory: "No memory file found.",
+    top_opportunities: "Top Opportunities",
+    no_opportunities: "No scored opportunities found.",
+    recent_executions: "Recent Executions",
+    no_executions: "No executions recorded.",
+    generated_files: "Generated Files",
+    no_files: "No generated files found.",
+    no_data: "No data available.",
+    none: "None",
+    goal: "Goal",
+    voice: "Voice",
+    risk: "Risk",
+    topics: "Topics",
+    keywords: "Keywords",
+    accounts: "Accounts",
+    cta: "CTA",
+    actions_count: (n) => `${n} actions`,
+    items_count: (n) => `${n} items`,
+    events_count: (n) => `${n} events`,
+    unknown: "unknown",
+    score: "score",
+    readiness: "readiness",
+    draft: "Draft",
+    no_draft_text: "No draft text.",
+    successful_topics: "Successful Topics",
+    action_types: "Action Types",
+    high_signal_accounts: "High Signal Accounts",
+    avoid_accounts: "Avoid Accounts",
+    no_signals: "No signals yet.",
+    status_refreshing: "Refreshing state...",
+    status_refreshed: "State refreshed.",
+    status_drafting: (id) => `Drafting action for ${id}...`,
+    status_drafted: (id) => `Draft created from ${id}.`,
+    status_preflight: "Running preflight...",
+    status_preflight_decision: (d) => `Preflight decision: ${d}.`,
+    status_dry_run: "Executing dry run...",
+    status_dry_run_done: "Dry run executed.",
+    confirm_live: "Execute current action live on X API?",
+    status_live_run: "Executing live action...",
+    status_live_run_done: "Live execution completed.",
+    lang_toggle: "中文",
+  },
+  zh: {
+    eyebrow: "审核面板",
+    hero_copy: "无需手动翻 JSON，直接查看 mission、动作优先级、记忆信号与执行记录。",
+    refresh: "刷新状态",
+    ready: "已就绪。",
+    mission: "运营任务",
+    no_mission: "尚未加载 mission",
+    action_plan: "行动计划",
+    no_action_plan: "暂无行动计划。",
+    current_action: "当前动作",
+    preflight: "预检查",
+    dry_run: "演练执行",
+    execute_live: "真实执行",
+    no_action: "暂无待执行动作。",
+    memory: "记忆",
+    learning_loop: "反馈学习",
+    no_memory: "未找到记忆文件。",
+    top_opportunities: "机会池（Top）",
+    no_opportunities: "暂无已评分机会。",
+    recent_executions: "最近执行",
+    no_executions: "暂无执行记录。",
+    generated_files: "生成文件",
+    no_files: "暂无生成文件。",
+    no_data: "暂无数据。",
+    none: "无",
+    goal: "目标",
+    voice: "语气",
+    risk: "风险",
+    topics: "主题",
+    keywords: "关键词",
+    accounts: "账号",
+    cta: "行动号召",
+    actions_count: (n) => `${n} 个动作`,
+    items_count: (n) => `${n} 条`,
+    events_count: (n) => `${n} 条记录`,
+    unknown: "未知",
+    score: "分数",
+    readiness: "互动可行性",
+    draft: "起草",
+    no_draft_text: "暂无草稿文案。",
+    successful_topics: "高表现主题",
+    action_types: "高表现动作类型",
+    high_signal_accounts: "高信号账号",
+    avoid_accounts: "避开账号",
+    no_signals: "暂无可用信号。",
+    status_refreshing: "正在刷新状态...",
+    status_refreshed: "状态已刷新。",
+    status_drafting: (id) => `正在为 ${id} 生成草稿...`,
+    status_drafted: (id) => `已根据 ${id} 生成草稿。`,
+    status_preflight: "正在进行预检查...",
+    status_preflight_decision: (d) => `预检查结果：${d}。`,
+    status_dry_run: "正在执行演练...",
+    status_dry_run_done: "演练执行完成。",
+    confirm_live: "确认真实执行当前动作并发往 X 吗？",
+    status_live_run: "正在真实执行...",
+    status_live_run_done: "真实执行已完成。",
+    lang_toggle: "EN",
+  },
+};
+
+function t(key, ...args) {
+  const value = I18N[currentLang]?.[key] ?? I18N.en[key] ?? key;
+  return typeof value === "function" ? value(...args) : value;
+}
+
+function applyStaticI18n() {
+  document.documentElement.lang = currentLang === "zh" ? "zh-CN" : "en";
+  document.querySelectorAll("[data-i18n]").forEach((node) => {
+    const key = node.dataset.i18n;
+    node.textContent = t(key);
+  });
+  byId("languageToggle").textContent = t("lang_toggle");
+}
 
 function setStatus(message, kind = "info") {
   const target = byId("statusBanner");
@@ -23,7 +157,7 @@ async function postJson(path, payload = {}) {
 
 function renderKeyValueBlock(target, entries) {
   if (!entries.length) {
-    target.innerHTML = '<div class="empty-state">No data available.</div>';
+    target.innerHTML = `<div class="empty-state">${t("no_data")}</div>`;
     return;
   }
   target.innerHTML = entries
@@ -39,30 +173,30 @@ function renderKeyValueBlock(target, entries) {
 }
 
 function renderTagList(values) {
-  if (!values || !values.length) return '<span class="muted">None</span>';
+  if (!values || !values.length) return `<span class="muted">${t("none")}</span>`;
   return values.map((value) => `<span class="tag">${value}</span>`).join("");
 }
 
 function renderMission(mission) {
-  byId("missionName").textContent = mission?.name || "No mission loaded";
+  byId("missionName").textContent = mission?.name || t("no_mission");
   renderKeyValueBlock(byId("missionMeta"), [
-    ["Goal", mission?.goal || "None"],
-    ["Voice", mission?.voice || "None"],
-    ["Risk", mission?.risk_tolerance || "None"],
-    ["Topics", renderTagList(mission?.primary_topics || [])],
-    ["Keywords", renderTagList(mission?.watch_keywords || [])],
-    ["Accounts", renderTagList(mission?.watch_accounts || [])],
-    ["CTA", mission?.cta || "None"],
+    [t("goal"), mission?.goal || t("none")],
+    [t("voice"), mission?.voice || t("none")],
+    [t("risk"), mission?.risk_tolerance || t("none")],
+    [t("topics"), renderTagList(mission?.primary_topics || [])],
+    [t("keywords"), renderTagList(mission?.watch_keywords || [])],
+    [t("accounts"), renderTagList(mission?.watch_accounts || [])],
+    [t("cta"), mission?.cta || t("none")],
   ]);
 }
 
 function renderPlan(plan) {
   const items = plan?.items || [];
-  byId("planCount").textContent = `${items.length} actions`;
+  byId("planCount").textContent = t("actions_count", items.length);
   const target = byId("planList");
   if (!items.length) {
     target.className = "list-block empty-state";
-    target.textContent = "No action plan found.";
+    target.textContent = t("no_action_plan");
     return;
   }
   target.className = "list-block";
@@ -74,10 +208,10 @@ function renderPlan(plan) {
             <strong>${item.action_type}</strong>
             <span class="chip small">${item.priority}</span>
           </div>
-          <p>${item.target_account || "unknown"} · score ${item.score} · readiness ${item.interaction_readiness}</p>
+          <p>${item.target_account || t("unknown")} · ${t("score")} ${item.score} · ${t("readiness")} ${item.interaction_readiness}</p>
           <p class="muted">${item.why_now || ""}</p>
           <div class="list-item-actions">
-            <button class="secondary-button draft-button" data-opportunity-id="${item.opportunity_id}">Draft</button>
+            <button class="secondary-button draft-button" data-opportunity-id="${item.opportunity_id}">${t("draft")}</button>
           </div>
         </article>
       `
@@ -87,7 +221,7 @@ function renderPlan(plan) {
 
 function renderCurrentAction(action) {
   currentActionId = action?.id || "";
-  byId("actionType").textContent = action?.action_type || "None";
+  byId("actionType").textContent = action?.action_type || t("none");
   const target = byId("currentAction");
   const disabled = !currentActionId;
   byId("preflightButton").disabled = disabled;
@@ -95,13 +229,13 @@ function renderCurrentAction(action) {
   byId("executeButton").disabled = disabled;
   if (!action || !action.id) {
     target.className = "action-card empty-state";
-    target.textContent = "No proposed action found.";
+    target.textContent = t("no_action");
     return;
   }
   target.className = "action-card";
   target.innerHTML = `
-    <p><strong>${action.action_type}</strong> · score ${action.score ?? "n/a"} · risk ${action.risk_level ?? "n/a"}</p>
-    <p class="draft">${action.draft_text || "No draft text."}</p>
+    <p><strong>${action.action_type}</strong> · ${t("score")} ${action.score ?? "n/a"} · ${t("risk")} ${action.risk_level ?? "n/a"}</p>
+    <p class="draft">${action.draft_text || t("no_draft_text")}</p>
     <p class="muted">${action.rationale || ""}</p>
   `;
 }
@@ -110,15 +244,15 @@ function renderMemory(memory) {
   const target = byId("memoryBlock");
   if (!memory || !Object.keys(memory).length) {
     target.className = "memory-grid empty-state";
-    target.textContent = "No memory file found.";
+    target.textContent = t("no_memory");
     return;
   }
   target.className = "memory-grid";
   const cards = [
-    ["Successful Topics", memory.successful_topics || {}],
-    ["Action Types", memory.successful_action_types || {}],
-    ["High Signal Accounts", memory.high_signal_accounts || {}],
-    ["Avoid Accounts", memory.avoid_accounts || {}],
+    [t("successful_topics"), memory.successful_topics || {}],
+    [t("action_types"), memory.successful_action_types || {}],
+    [t("high_signal_accounts"), memory.high_signal_accounts || {}],
+    [t("avoid_accounts"), memory.avoid_accounts || {}],
   ];
   target.innerHTML = cards
     .map(([title, obj]) => {
@@ -132,7 +266,7 @@ function renderMemory(memory) {
                   .slice(0, 5)
                   .map(([key, value]) => `<div class="memory-row"><span>${key}</span><strong>${value}</strong></div>`)
                   .join("")
-              : '<div class="muted">No signals yet.</div>'
+              : `<div class="muted">${t("no_signals")}</div>`
           }
         </div>
       `;
@@ -142,11 +276,11 @@ function renderMemory(memory) {
 
 function renderOpportunities(payload) {
   const items = payload?.items || [];
-  byId("opportunityCount").textContent = `${items.length} items`;
+  byId("opportunityCount").textContent = t("items_count", items.length);
   const target = byId("opportunityList");
   if (!items.length) {
     target.className = "list-block empty-state";
-    target.textContent = "No scored opportunities found.";
+    target.textContent = t("no_opportunities");
     return;
   }
   target.className = "list-block";
@@ -156,14 +290,14 @@ function renderOpportunities(payload) {
       (item) => `
         <article class="list-item">
           <div class="list-item-head">
-            <strong>${item.source_account || "unknown"}</strong>
+            <strong>${item.source_account || t("unknown")}</strong>
             <span class="chip small">${item.recommended_action}</span>
           </div>
-          <p>${item.score} · ${item.risk_level} · ${(item.algorithm_hints || {}).interaction_readiness || "unknown"}</p>
+          <p>${item.score} · ${item.risk_level} · ${(item.algorithm_hints || {}).interaction_readiness || t("unknown")}</p>
           <p class="muted">${(item.text || "").slice(0, 140)}</p>
           ${
             item.recommended_action && item.recommended_action !== "observe"
-              ? `<div class="list-item-actions"><button class="secondary-button draft-button" data-opportunity-id="${item.id}">Draft</button></div>`
+              ? `<div class="list-item-actions"><button class="secondary-button draft-button" data-opportunity-id="${item.id}">${t("draft")}</button></div>`
               : ""
           }
         </article>
@@ -174,11 +308,11 @@ function renderOpportunities(payload) {
 
 function renderExecutions(events) {
   const items = events || [];
-  byId("executionCount").textContent = `${items.length} events`;
+  byId("executionCount").textContent = t("events_count", items.length);
   const target = byId("executionList");
   if (!items.length) {
     target.className = "list-block empty-state";
-    target.textContent = "No executions recorded.";
+    target.textContent = t("no_executions");
     return;
   }
   target.className = "list-block";
@@ -187,10 +321,10 @@ function renderExecutions(events) {
       (item) => `
         <article class="list-item">
           <div class="list-item-head">
-            <strong>${item.action_type || "unknown"}</strong>
+            <strong>${item.action_type || t("unknown")}</strong>
             <span class="chip small">${item.status}</span>
           </div>
-          <p>${item.target_account || "unknown"} · ${item.executed_at || "n/a"}</p>
+          <p>${item.target_account || t("unknown")} · ${item.executed_at || "n/a"}</p>
           <p class="muted">${(item.draft_text || "").slice(0, 140)}</p>
         </article>
       `
@@ -202,7 +336,7 @@ function renderFiles(files) {
   const target = byId("fileList");
   if (!files?.length) {
     target.className = "file-list empty-state";
-    target.textContent = "No generated files found.";
+    target.textContent = t("no_files");
     return;
   }
   target.className = "file-list";
@@ -228,10 +362,10 @@ function wireActionButtons() {
       const opportunityId = button.dataset.opportunityId;
       if (!opportunityId) return;
       try {
-        setStatus(`Drafting action for ${opportunityId}...`);
+        setStatus(t("status_drafting", opportunityId));
         await postJson("/api/draft", { opportunity_id: opportunityId });
         await loadState();
-        setStatus(`Draft created from ${opportunityId}.`, "success");
+        setStatus(t("status_drafted", opportunityId), "success");
       } catch (error) {
         console.error(error);
         setStatus(error.message, "error");
@@ -242,9 +376,9 @@ function wireActionButtons() {
 
 byId("refreshButton").addEventListener("click", async () => {
   try {
-    setStatus("Refreshing state...");
+    setStatus(t("status_refreshing"));
     await loadState();
-    setStatus("State refreshed.", "success");
+    setStatus(t("status_refreshed"), "success");
   } catch (error) {
     console.error(error);
     setStatus(error.message, "error");
@@ -254,10 +388,10 @@ byId("refreshButton").addEventListener("click", async () => {
 byId("preflightButton").addEventListener("click", async () => {
   if (!currentActionId) return;
   try {
-    setStatus("Running preflight...");
+    setStatus(t("status_preflight"));
     const response = await postJson("/api/preflight", {});
-    const decision = response.preflight?.decision || "unknown";
-    setStatus(`Preflight decision: ${decision}.`, decision === "allow" ? "success" : "error");
+    const decision = response.preflight?.decision || t("unknown");
+    setStatus(t("status_preflight_decision", decision), decision === "allow" ? "success" : "error");
   } catch (error) {
     console.error(error);
     setStatus(error.message, "error");
@@ -267,10 +401,10 @@ byId("preflightButton").addEventListener("click", async () => {
 byId("dryRunButton").addEventListener("click", async () => {
   if (!currentActionId) return;
   try {
-    setStatus("Executing dry run...");
+    setStatus(t("status_dry_run"));
     await postJson("/api/execute", { mode: "dry-run" });
     await loadState();
-    setStatus("Dry run executed.", "success");
+    setStatus(t("status_dry_run_done"), "success");
   } catch (error) {
     console.error(error);
     setStatus(error.message, "error");
@@ -279,18 +413,25 @@ byId("dryRunButton").addEventListener("click", async () => {
 
 byId("executeButton").addEventListener("click", async () => {
   if (!currentActionId) return;
-  if (!window.confirm("Execute current action live on X API?")) return;
+  if (!window.confirm(t("confirm_live"))) return;
   try {
-    setStatus("Executing live action...");
+    setStatus(t("status_live_run"));
     await postJson("/api/execute", { mode: "x-api" });
     await loadState();
-    setStatus("Live execution completed.", "success");
+    setStatus(t("status_live_run_done"), "success");
   } catch (error) {
     console.error(error);
     setStatus(error.message, "error");
   }
 });
 
+byId("languageToggle").addEventListener("click", async () => {
+  currentLang = currentLang === "zh" ? "en" : "zh";
+  applyStaticI18n();
+  await loadState();
+});
+
+applyStaticI18n();
 loadState().catch((error) => {
   console.error(error);
   setStatus(error.message, "error");
