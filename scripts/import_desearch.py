@@ -18,11 +18,22 @@ def transform_tweet(tweet: dict) -> dict:
 
     hashtags: list[str] = []
     entities = tweet.get("entities") or {}
+    mentions: list[str] = []
     for tag in entities.get("hashtags") or []:
         if isinstance(tag, dict) and tag.get("text"):
             hashtags.append(str(tag["text"]).lower())
         elif isinstance(tag, str):
             hashtags.append(tag.lower())
+    for mention in entities.get("mentions") or []:
+        if isinstance(mention, dict) and mention.get("username"):
+            mentions.append(str(mention["username"]).lower())
+
+    referenced_tweets = tweet.get("referenced_tweets") or []
+    reply_settings = tweet.get("reply_settings") or "everyone"
+    is_reply_tweet = any(
+        isinstance(reference, dict) and reference.get("type") == "replied_to"
+        for reference in referenced_tweets
+    )
 
     return {
         "id": f"desearch-{tweet.get('id')}",
@@ -39,6 +50,11 @@ def transform_tweet(tweet: dict) -> dict:
         "growth_velocity": round(growth_velocity, 2),
         "sentiment": "positive",
         "topics": hashtags,
+        "reply_settings": reply_settings,
+        "conversation_id": tweet.get("conversation_id", ""),
+        "referenced_tweets": referenced_tweets,
+        "mentions": mentions,
+        "is_reply_tweet": is_reply_tweet,
     }
 
 

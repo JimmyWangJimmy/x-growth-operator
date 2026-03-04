@@ -143,6 +143,7 @@ python3 scripts/run_cycle.py \
 - Treat the mission as the source of truth for content direction. Do not assume the account is about OpenClaw, agents, or developer tools unless the user brief says so.
 - If no live X source is available, operate on imported JSON opportunities and keep the workflow moving.
 - Prefer replies and quote posts over net-new posts when the opportunity is time-sensitive.
+- Downrank or reroute interaction ideas when thread structure or reply settings suggest a likely permission failure.
 - Reject actions that conflict with mission constraints, banned topics, or risk thresholds.
 - When confidence is low, recommend `observe` instead of forcing an action.
 - Persist what worked. Use `data/memory.json` to carry forward successful angles, source accounts, and action types.

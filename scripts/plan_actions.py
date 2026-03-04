@@ -22,6 +22,7 @@ def rank_actions(mission: dict[str, Any], opportunities: list[dict[str, Any]]) -
             "target_url": item.get("url"),
             "score": item.get("score"),
             "risk_level": item.get("risk_level"),
+            "interaction_readiness": (item.get("algorithm_hints") or {}).get("interaction_readiness", "unknown"),
             "why_now": "; ".join(item.get("reasons", [])[:3]),
             "cta": mission.get("cta", ""),
         })

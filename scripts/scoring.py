@@ -59,6 +59,34 @@ def link_penalty(text: str) -> tuple[float, bool]:
     return (6.0 if has_link else 0.0, has_link)
 
 
+def interaction_penalty(mission: dict[str, Any], item: dict[str, Any]) -> tuple[float, list[str], str]:
+    reasons: list[str] = []
+    penalty = 0.0
+    reply_settings = str(item.get("reply_settings") or "everyone").lower()
+    is_reply_tweet = bool(item.get("is_reply_tweet"))
+    mentions = {str(value).lower().lstrip("@") for value in item.get("mentions", [])}
+    handle = str(mission.get("account_handle") or "").lower().lstrip("@")
+
+    readiness = "open"
+    if reply_settings != "everyone":
+        penalty += 18.0
+        readiness = "restricted"
+        reasons.append(f"reply settings are {reply_settings}")
+        if reply_settings == "mentionedusers" and handle and handle.lstrip("@") not in mentions:
+            penalty += 10.0
+            reasons.append("mission account is not mentioned in the target tweet")
+
+    if is_reply_tweet:
+        penalty += 14.0
+        readiness = "thread_reply" if readiness == "open" else readiness
+        reasons.append("target is already a reply inside another conversation")
+        if handle and handle not in mentions:
+            penalty += 6.0
+            reasons.append("mission account is not part of that reply sub-thread")
+
+    return penalty, reasons, readiness
+
+
 def score_opportunity(mission: dict[str, Any], item: dict[str, Any], memory: dict[str, Any] | None = None) -> dict[str, Any]:
     mission_topics = _lower_list(mission.get("primary_topics", []))
     mission_keywords = _lower_list(mission.get("watch_keywords", []))
@@ -85,6 +113,7 @@ def score_opportunity(mission: dict[str, Any], item: dict[str, Any], memory: dic
     off_platform_penalty, has_link = link_penalty(text)
     source_bonus = 8 if item.get("source_type") == "kol" else 4 if item.get("source_type") == "brand" else 0
     weak_relevance_penalty = 22 if watched_bonus and topic_hits == 0 and keyword_hits == 0 and lexicon_hits < 2 else 0
+    interaction_risk_penalty, interaction_risk_reasons, interaction_readiness = interaction_penalty(mission, item)
     velocity_score = round(float(item.get("growth_velocity", 0)) * 25, 2)
     engagement_score = min(
         20,
@@ -114,6 +143,7 @@ def score_opportunity(mission: dict[str, Any], item: dict[str, Any], memory: dic
         + engagement_score
         - memory_account_penalty
         - weak_relevance_penalty
+        - interaction_risk_penalty
         - off_platform_penalty
         - risk_penalty
         - sentiment_penalty,
@@ -139,6 +169,8 @@ def score_opportunity(mission: dict[str, Any], item: dict[str, Any], memory: dic
         reasons.append(recent_reason)
     if weak_relevance_penalty:
         reasons.append("weak topical relevance despite watched-account status")
+    if interaction_risk_reasons:
+        reasons.extend(interaction_risk_reasons)
     if velocity_score >= 15:
         reasons.append("showing strong growth velocity")
     if engagement_score >= 10:
@@ -151,18 +183,22 @@ def score_opportunity(mission: dict[str, Any], item: dict[str, Any], memory: dic
         reasons.append(f"sentiment is {sentiment}")
 
     risk_level = "high" if risk_hits or sentiment_penalty >= 10 else "medium" if total_score < 35 else "low"
-    recommended_action = choose_action(mission, total_score, risk_level, item)
+    item_for_action = {
+        **item,
+        "algorithm_hints": {
+            "reply_window_open": recent_bonus >= 14.0,
+            "avoid_link_in_main_post": has_link,
+            "interaction_readiness": interaction_readiness,
+        },
+    }
+    recommended_action = choose_action(mission, total_score, risk_level, item_for_action)
 
     return {
-        **item,
+        **item_for_action,
         "score": total_score,
         "risk_level": risk_level,
         "recommended_action": recommended_action,
         "reasons": reasons,
-        "algorithm_hints": {
-            "reply_window_open": recent_bonus >= 14.0,
-            "avoid_link_in_main_post": has_link,
-        },
     }
 
 
@@ -193,9 +229,14 @@ def choose_action(mission: dict[str, Any], total_score: float, risk_level: str, 
     restrictive_conversation = direct_conversation and not any(
         phrase in text for phrase in relevant_markers
     )
+    interaction_readiness = (item.get("algorithm_hints") or {}).get("interaction_readiness")
 
     if risk_level == "high":
         return "observe"
+    if interaction_readiness == "restricted" and total_score < 60:
+        return "post" if total_score >= 35 else "observe"
+    if interaction_readiness == "thread_reply" and total_score < 55:
+        return "post" if total_score >= 35 else "observe"
     if restrictive_conversation and total_score < 45:
         return "observe"
     if direct_conversation and not mission_signal and total_score < 42:

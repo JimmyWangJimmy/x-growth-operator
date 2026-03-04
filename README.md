@@ -114,6 +114,7 @@ Current limits:
 - `reply` and `quote_post` can be rejected by X conversation permissions
 - Opportunity filtering is still tuned for review-first operation, not full autonomy
 - The example files are OpenClaw-themed demo data; the live workflow is driven by the user's own mission
+- The plan stage now downranks `reply` and `quote_post` targets that already look permission-constrained
 
 ## Package The Skill
 
