@@ -126,6 +126,59 @@ function t(key, ...args) {
   return typeof value === "function" ? value(...args) : value;
 }
 
+function localizeActionType(value) {
+  if (currentLang !== "zh") return value || t("none");
+  const mapping = {
+    post: "原创",
+    reply: "回复",
+    quote_post: "引用转发",
+    observe: "观察",
+    thread: "线程",
+  };
+  return mapping[String(value || "").toLowerCase()] || value || t("none");
+}
+
+function localizePriority(value) {
+  if (currentLang !== "zh") return value || t("none");
+  const mapping = { high: "高", medium: "中", low: "低" };
+  return mapping[String(value || "").toLowerCase()] || value || t("none");
+}
+
+function localizeRisk(value) {
+  if (currentLang !== "zh") return value || t("none");
+  const mapping = { high: "高", medium: "中", low: "低" };
+  return mapping[String(value || "").toLowerCase()] || value || t("none");
+}
+
+function localizeReadiness(value) {
+  if (currentLang !== "zh") return value || t("unknown");
+  const mapping = {
+    open: "可互动",
+    restricted: "受限",
+    thread_reply: "线程回复受限",
+    unknown: "未知",
+  };
+  return mapping[String(value || "").toLowerCase()] || value || t("unknown");
+}
+
+function localizeStatus(value) {
+  if (currentLang !== "zh") return value || t("unknown");
+  const mapping = {
+    executed: "已执行",
+    recorded: "已记录",
+    proposed: "待审核",
+    dry_run_executed: "演练完成",
+    blocked: "已拦截",
+  };
+  return mapping[String(value || "").toLowerCase()] || value || t("unknown");
+}
+
+function localizeDecision(value) {
+  if (currentLang !== "zh") return value || t("unknown");
+  const mapping = { allow: "允许", block: "阻断", review: "人工复核", unknown: "未知" };
+  return mapping[String(value || "").toLowerCase()] || value || t("unknown");
+}
+
 function applyStaticI18n() {
   document.documentElement.lang = currentLang === "zh" ? "zh-CN" : "en";
   document.querySelectorAll("[data-i18n]").forEach((node) => {
@@ -182,7 +235,7 @@ function renderMission(mission) {
   renderKeyValueBlock(byId("missionMeta"), [
     [t("goal"), mission?.goal || t("none")],
     [t("voice"), mission?.voice || t("none")],
-    [t("risk"), mission?.risk_tolerance || t("none")],
+    [t("risk"), localizeRisk(mission?.risk_tolerance || t("none"))],
     [t("topics"), renderTagList(mission?.primary_topics || [])],
     [t("keywords"), renderTagList(mission?.watch_keywords || [])],
     [t("accounts"), renderTagList(mission?.watch_accounts || [])],
@@ -205,10 +258,10 @@ function renderPlan(plan) {
       (item) => `
         <article class="list-item">
           <div class="list-item-head">
-            <strong>${item.action_type}</strong>
-            <span class="chip small">${item.priority}</span>
+            <strong>${localizeActionType(item.action_type)}</strong>
+            <span class="chip small">${localizePriority(item.priority)}</span>
           </div>
-          <p>${item.target_account || t("unknown")} · ${t("score")} ${item.score} · ${t("readiness")} ${item.interaction_readiness}</p>
+          <p>${item.target_account || t("unknown")} · ${t("score")} ${item.score} · ${t("readiness")} ${localizeReadiness(item.interaction_readiness)}</p>
           <p class="muted">${item.why_now || ""}</p>
           <div class="list-item-actions">
             <button class="secondary-button draft-button" data-opportunity-id="${item.opportunity_id}">${t("draft")}</button>
@@ -221,7 +274,7 @@ function renderPlan(plan) {
 
 function renderCurrentAction(action) {
   currentActionId = action?.id || "";
-  byId("actionType").textContent = action?.action_type || t("none");
+  byId("actionType").textContent = localizeActionType(action?.action_type || t("none"));
   const target = byId("currentAction");
   const disabled = !currentActionId;
   byId("preflightButton").disabled = disabled;
@@ -234,7 +287,7 @@ function renderCurrentAction(action) {
   }
   target.className = "action-card";
   target.innerHTML = `
-    <p><strong>${action.action_type}</strong> · ${t("score")} ${action.score ?? "n/a"} · ${t("risk")} ${action.risk_level ?? "n/a"}</p>
+    <p><strong>${localizeActionType(action.action_type)}</strong> · ${t("score")} ${action.score ?? "n/a"} · ${t("risk")} ${localizeRisk(action.risk_level ?? "n/a")}</p>
     <p class="draft">${action.draft_text || t("no_draft_text")}</p>
     <p class="muted">${action.rationale || ""}</p>
   `;
@@ -291,9 +344,9 @@ function renderOpportunities(payload) {
         <article class="list-item">
           <div class="list-item-head">
             <strong>${item.source_account || t("unknown")}</strong>
-            <span class="chip small">${item.recommended_action}</span>
+            <span class="chip small">${localizeActionType(item.recommended_action)}</span>
           </div>
-          <p>${item.score} · ${item.risk_level} · ${(item.algorithm_hints || {}).interaction_readiness || t("unknown")}</p>
+          <p>${item.score} · ${localizeRisk(item.risk_level)} · ${localizeReadiness((item.algorithm_hints || {}).interaction_readiness || "unknown")}</p>
           <p class="muted">${(item.text || "").slice(0, 140)}</p>
           ${
             item.recommended_action && item.recommended_action !== "observe"
@@ -321,8 +374,8 @@ function renderExecutions(events) {
       (item) => `
         <article class="list-item">
           <div class="list-item-head">
-            <strong>${item.action_type || t("unknown")}</strong>
-            <span class="chip small">${item.status}</span>
+            <strong>${localizeActionType(item.action_type || t("unknown"))}</strong>
+            <span class="chip small">${localizeStatus(item.status)}</span>
           </div>
           <p>${item.target_account || t("unknown")} · ${item.executed_at || "n/a"}</p>
           <p class="muted">${(item.draft_text || "").slice(0, 140)}</p>
@@ -390,8 +443,9 @@ byId("preflightButton").addEventListener("click", async () => {
   try {
     setStatus(t("status_preflight"));
     const response = await postJson("/api/preflight", {});
-    const decision = response.preflight?.decision || t("unknown");
-    setStatus(t("status_preflight_decision", decision), decision === "allow" ? "success" : "error");
+    const decisionRaw = response.preflight?.decision || "unknown";
+    const decision = localizeDecision(decisionRaw);
+    setStatus(t("status_preflight_decision", decision), decisionRaw === "allow" ? "success" : "error");
   } catch (error) {
     console.error(error);
     setStatus(error.message, "error");
