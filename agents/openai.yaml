@@ -1,6 +1,6 @@
 interface:
-  display_name: "X Growth Operator"
-  short_description: "Review-first X operations skill with explicit approval before live execution."
+  display_name: "X Growth Operator / X 增长运营助手"
+  short_description: "Review-first X operations skill with explicit approval before live execution / 先审核后执行的 X 运营 Skill。"
   default_prompt: "Use $x-growth-operator to turn my brief into an X mission, rank opportunities, and propose the best next action."
 
 runtime:

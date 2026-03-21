@@ -1,9 +1,9 @@
 ---
 name: x-growth-operator
-description: Plan and execute mission-driven X growth operations. Use when the user wants to monitor KOL posts, detect emerging discussions, turn briefs or uploaded docs into a growth mission, draft replies or posts, rank opportunities, and execute approved actions with a local audit trail.
+description: Plan and execute mission-driven X growth operations / 任务驱动的 X 增长运营规划与执行。Use when the user wants to monitor KOL posts, detect emerging discussions, turn briefs or uploaded docs into a growth mission, draft replies or posts, rank opportunities, and execute approved actions with a local audit trail.
 ---
 
-# X Growth Operator
+# X Growth Operator / X 增长运营助手
 
 Use this skill when the user wants a review-first workflow for X operations rather than a generic writing assistant.
 

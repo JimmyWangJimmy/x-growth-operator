@@ -2,15 +2,11 @@
 
 ## Display Name
 
-`X Growth Operator`
+`X Growth Operator / X 增长运营助手`
 
-## Short Description (EN)
+## Short Description (EN + 中文)
 
-Review-first X growth operations skill that turns a brief into a mission, finds opportunities, drafts actions, and executes only after explicit approval.
-
-## 简短描述（中文）
-
-一个“先审核后执行”的 X 增长运营 Skill：把 brief 转成 mission，发现机会、起草动作，并仅在明确批准后执行。
+Review-first X growth operations skill that turns a brief into a mission, finds opportunities, drafts actions, and executes only after explicit approval / 一个“先审核后执行”的 X 增长运营 Skill：把 brief 转成 mission，发现机会、起草动作，并仅在明确批准后执行。
 
 ## Full Description (EN)
 
