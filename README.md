@@ -49,6 +49,22 @@ If you need a proxy for X, also set:
 - `ALL_PROXY`
 - `NO_PROXY`
 
+## Security & Runtime Notes
+
+- Real posting is only performed in `--mode x-api` and still requires explicit approval in the workflow.
+- Required env vars for real X execution:
+  - `X_API_KEY`
+  - `X_API_SECRET`
+  - `X_ACCESS_TOKEN`
+  - `X_ACCESS_TOKEN_SECRET`
+- Optional env var:
+  - `DESEARCH_API_KEY` (only for live Desearch search/import)
+- Runtime install step:
+  - `cd scripts && npm install`
+- Network targets:
+  - `https://api.twitter.com`
+  - `https://api.x.com`
+
 ## Quick Start
 
 Build a mission:

@@ -11,6 +11,25 @@ Use this skill when the user wants a review-first workflow for X operations rath
 
 Turn a user brief into an X growth mission, infer what the account should watch, find relevant opportunities, draft actions, and execute approved posts with an audit trail.
 
+## Security & Runtime Declaration
+
+- This skill can perform real authenticated X actions only in `x-api` mode and only after explicit approval.
+- Required environment variables for real X execution:
+  - `X_API_KEY`
+  - `X_API_SECRET`
+  - `X_ACCESS_TOKEN`
+  - `X_ACCESS_TOKEN_SECRET`
+- Optional environment variable:
+  - `DESEARCH_API_KEY` (needed only for live Desearch search/import)
+- Install step required before real execution:
+  - `cd scripts && npm install`
+- Network targets used by this skill:
+  - `https://api.twitter.com`
+  - `https://api.x.com`
+- Local persistence paths:
+  - `data/`
+  - `scripts/.env`
+
 ## Trigger Conditions
 
 Use this skill when the user asks to:

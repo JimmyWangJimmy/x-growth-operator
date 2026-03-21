@@ -1,7 +1,24 @@
 interface:
   display_name: "X Growth Operator"
-  short_description: "Monitor X and draft growth actions."
-  default_prompt: "Use $x-growth-operator to turn my brief into an X growth mission, infer what to monitor, and propose the best next action."
+  short_description: "Review-first X operations skill with explicit approval before live execution."
+  default_prompt: "Use $x-growth-operator to turn my brief into an X mission, rank opportunities, and propose the best next action."
+
+runtime:
+  install_steps:
+    - "cd scripts && npm install"
+  required_environment_variables:
+    - "X_API_KEY"
+    - "X_API_SECRET"
+    - "X_ACCESS_TOKEN"
+    - "X_ACCESS_TOKEN_SECRET"
+    - "DESEARCH_API_KEY (optional; needed only for live Desearch search)"
+  network_access:
+    - "https://api.twitter.com"
+    - "https://api.x.com"
+  uses_subprocesses: true
+  local_state_paths:
+    - "data/"
+    - "scripts/.env"
 
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
