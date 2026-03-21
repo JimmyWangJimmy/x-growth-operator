@@ -71,6 +71,7 @@ X Growth Operator 是一个基于 mission 的 X 运营 Skill，默认“先审�
 - Declared install step and network targets.
 - Disabled implicit invocation in metadata.
 - Removed unused `twitter-api-v2` dependency and aligned env checks to current runtime.
+- Replaced shell-based API calls with direct Node HTTPS requests in `x_oauth_cli.js` (no `child_process` shell execution).
 
 ## 更新说明（v1.0.2）中文
 
@@ -79,3 +80,4 @@ X Growth Operator 是一个基于 mission 的 X 运营 Skill，默认“先审�
 - 明确声明安装步骤与外部网络目标。
 - 在元数据中关闭了隐式自动调用。
 - 移除未使用的 `twitter-api-v2` 依赖，并同步更新环境检查逻辑。
+- 将 `x_oauth_cli.js` 改为 Node 直接 HTTPS 请求，不再通过 `child_process` 执行 shell 命令。

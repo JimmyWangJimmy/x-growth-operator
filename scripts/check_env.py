@@ -39,8 +39,6 @@ def main() -> int:
       commander_module = os.path.join(install_dir, "node_modules", "commander")
       checks.append(("npm deps (commander)", os.path.isdir(commander_module), commander_module if os.path.isdir(commander_module) else "not installed"))
       checks.append(("x_oauth_cli.js", os.path.isfile(os.path.join(install_dir, "x_oauth_cli.js")), "present" if os.path.isfile(os.path.join(install_dir, "x_oauth_cli.js")) else "missing"))
-      curl_ok, curl_path = check_binary("curl")
-      checks.append(("curl", curl_ok, curl_path))
       checks.append(("DESEARCH_API_KEY", bool(os.environ.get("DESEARCH_API_KEY")), "set" if os.environ.get("DESEARCH_API_KEY") else "optional"))
 
     failed = False

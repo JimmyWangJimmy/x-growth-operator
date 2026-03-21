@@ -64,6 +64,7 @@ If you need a proxy for X, also set:
 - Network targets:
   - `https://api.twitter.com`
   - `https://api.x.com`
+- The X CLI performs direct HTTPS requests from Node (no shell command execution).
 
 ## Quick Start
 
