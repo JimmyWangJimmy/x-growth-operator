@@ -64,7 +64,7 @@ X Growth Operator 是一个基于 mission 的 X 运营 Skill，默认“先审�
   - `data/`
   - `scripts/.env`
 
-## Changelog (v1.0.1) EN
+## Changelog (v1.0.2) EN
 
 - Added explicit runtime/security declarations to reduce registry scan ambiguity.
 - Declared required OAuth environment variables and optional Desearch key.
@@ -72,7 +72,7 @@ X Growth Operator 是一个基于 mission 的 X 运营 Skill，默认“先审�
 - Disabled implicit invocation in metadata.
 - Removed unused `twitter-api-v2` dependency and aligned env checks to current runtime.
 
-## 更新说明（v1.0.1）中文
+## 更新说明（v1.0.2）中文
 
 - 补充了运行与安全声明，降低平台扫描误判。
 - 明确声明了必需 OAuth 环境变量和可选 Desearch Key。
