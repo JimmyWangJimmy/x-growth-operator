@@ -182,6 +182,10 @@ This writes:
 
 `dist/x-growth-operator-skill.zip`
 
+For ClawHub publishing (EN + 中文), use:
+
+- `docs/clawhub_publish_bilingual.md`
+
 ## Next
 
 The roadmap for turning this skill into a larger product is in `ROADMAP.md`.
